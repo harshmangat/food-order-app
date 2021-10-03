@@ -8,9 +8,10 @@ import Checkout from './Checkout';
 import { useState } from 'react/cjs/react.development';
 
 const Cart = (props) => {
-  const cartCtx = useContext(CartContext);
   const [isCheckout, setIsCheckout]= useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const cartCtx = useContext(CartContext);
+  
   const totalAmount = `$${cartCtx.totalAmount.toFixed(2)}`;
   const hasItems = cartCtx.items.length > 0;
 
@@ -24,6 +25,18 @@ const Cart = (props) => {
 
 const orderHandler = ()=>{
   setIsCheckout(true);
+}
+
+const submitOrderHandler = async (userData) => {
+  setIsSubmitting(true);
+  await fetch('https://react-http-231e0-default-rtdb.firebaseio.com/orders.json', {
+    method: 'POST',
+    body: JSON.stringify({
+      user: userData,
+      orderedItems: cartCtx.items
+    })
+  })
+  setIsSubmitting(false)
 }
 
   const cartItems = (
@@ -57,7 +70,7 @@ const modalActions = (
         <span>Total Amount</span>
         <span>{totalAmount}</span>
       </div>
-      {isCheckout && <Checkout onCancel={props.onClose}/>}
+      {isCheckout && <Checkout onConfirm ={submitOrderHandler} onCancel={props.onClose}/>}
       {!isCheckout && modalActions}
     
     </Modal>
